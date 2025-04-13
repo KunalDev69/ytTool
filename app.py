@@ -820,96 +820,137 @@
 
 
 
-from flask import Flask, render_template, request, send_file
-import yt_dlp
-import os
-import uuid
+# from flask import Flask, render_template, request, send_file
+# import yt_dlp
+# import os
+# import uuid
 
-app = Flask(__name__)
+# app = Flask(__name__)
 
-# Use /tmp for Render compatibility
-DOWNLOAD_DIR = "/tmp/downloads"
-COOKIES_PATH = "cookies.txt"
+# # Use /tmp for Render compatibility
+# DOWNLOAD_DIR = "/tmp/downloads"
+# COOKIES_PATH = "cookies.txt"
 
-# Ensure the downloads directory exists
-os.makedirs(DOWNLOAD_DIR, exist_ok=True)
+# # Ensure the downloads directory exists
+# os.makedirs(DOWNLOAD_DIR, exist_ok=True)
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+# @app.route('/')
+# def index():
+#     return render_template('index.html')
 
-@app.route('/fetch', methods=['POST'])
-def fetch():
-    url = request.form['url']
+# @app.route('/fetch', methods=['POST'])
+# def fetch():
+#     url = request.form['url']
 
-    ydl_opts = {
-        'quiet': True,
-        'skip_download': True,
-        'format': 'best',
-    }
+#     ydl_opts = {
+#         'quiet': True,
+#         'skip_download': True,
+#         'format': 'best',
+#     }
 
-    if os.path.exists(COOKIES_PATH):
-        ydl_opts['cookiefile'] = COOKIES_PATH
+#     if os.path.exists(COOKIES_PATH):
+#         ydl_opts['cookiefile'] = COOKIES_PATH
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=False)
-    except Exception as e:
-        return render_template('error.html', message=f"Failed to fetch video: {str(e)}")
+#     try:
+#         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+#             info = ydl.extract_info(url, download=False)
+#     except Exception as e:
+#         return render_template('error.html', message=f"Failed to fetch video: {str(e)}")
 
-    formats = []
-    seen = set()
+#     formats = []
+#     seen = set()
 
-    for f in info.get('formats', []):
-        ext = f.get('ext')
-        format_id = f.get('format_id')
-        filesize = f.get('filesize') or 0
-        height = f.get('height')
-        vcodec = f.get('vcodec')
+#     for f in info.get('formats', []):
+#         ext = f.get('ext')
+#         format_id = f.get('format_id')
+#         filesize = f.get('filesize') or 0
+#         height = f.get('height')
+#         vcodec = f.get('vcodec')
 
-        if ext not in ['mp4', 'webm', 'm4a'] or not format_id:
-            continue
+#         if ext not in ['mp4', 'webm', 'm4a'] or not format_id:
+#             continue
 
-        if (format_id, ext) in seen:
-            continue
-        seen.add((format_id, ext))
+#         if (format_id, ext) in seen:
+#             continue
+#         seen.add((format_id, ext))
 
-        resolution = "Audio only" if vcodec == 'none' else f"{height}p" if height else "Video"
-        size_mb = round(filesize / (1024 * 1024), 2) if filesize else "Unknown"
+#         resolution = "Audio only" if vcodec == 'none' else f"{height}p" if height else "Video"
+#         size_mb = round(filesize / (1024 * 1024), 2) if filesize else "Unknown"
 
-        formats.append({
-            'format_id': format_id,
-            'ext': ext,
-            'resolution': resolution,
-            'filesize': f"{size_mb} MB" if filesize else "Unknown"
-        })
+#         formats.append({
+#             'format_id': format_id,
+#             'ext': ext,
+#             'resolution': resolution,
+#             'filesize': f"{size_mb} MB" if filesize else "Unknown"
+#         })
 
-    if not formats:
-        return render_template('error.html', message="No downloadable formats found.")
+#     if not formats:
+#         return render_template('error.html', message="No downloadable formats found.")
 
-    video_data = {
-        'title': info.get('title', 'Unknown'),
-        'thumbnail': info.get('thumbnail'),
-        'duration': info.get('duration_string', 'N/A'),
-        'formats': formats,
-        'url': url,
-        'video_id': info['id']
-    }
+#     video_data = {
+#         'title': info.get('title', 'Unknown'),
+#         'thumbnail': info.get('thumbnail'),
+#         'duration': info.get('duration_string', 'N/A'),
+#         'formats': formats,
+#         'url': url,
+#         'video_id': info['id']
+#     }
 
-    return render_template('result.html', video=video_data)
+#     return render_template('result.html', video=video_data)
+
+# @app.route('/download', methods=['POST'])
+# def download():
+#     url = request.form['url']
+#     format_id = request.form['format_id']
+#     filename = str(uuid.uuid4())
+#     output_template = os.path.join(DOWNLOAD_DIR, f"{filename}.%(ext)s")
+
+#     ydl_opts = {
+#         'format': format_id,
+#         'outtmpl': output_template,
+#         'quiet': True,
+#         'no_warnings': True,
+#         'noplaylist': True
+#     }
+
+#     if os.path.exists(COOKIES_PATH):
+#         ydl_opts['cookiefile'] = COOKIES_PATH
+
+#     try:
+#         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+#             info = ydl.extract_info(url, download=True)
+#             downloaded_file = ydl.prepare_filename(info)
+
+#         # Confirm file exists before sending
+#         if not os.path.exists(downloaded_file):
+#             return render_template('error.html', message="File was not downloaded.")
+
+#         return send_file(downloaded_file, as_attachment=True)
+#     except Exception as e:
+#         return render_template('error.html', message=f"Download failed: {str(e)}")
+
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)
+
+#         return render_template('error.html', message=f"Download failed: {str(e)}")
+
+# if __name__ == '__main__':
+#     app.run(host='0.0.0.0', port=5000, debug=True)
+
+
+
+
+from flask import redirect
 
 @app.route('/download', methods=['POST'])
 def download():
     url = request.form['url']
     format_id = request.form['format_id']
-    filename = str(uuid.uuid4())
-    output_template = os.path.join(DOWNLOAD_DIR, f"{filename}.%(ext)s")
 
     ydl_opts = {
         'format': format_id,
-        'outtmpl': output_template,
         'quiet': True,
-        'no_warnings': True,
+        'skip_download': True,
         'noplaylist': True
     }
 
@@ -918,21 +959,19 @@ def download():
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(url, download=True)
-            downloaded_file = ydl.prepare_filename(info)
+            info = ydl.extract_info(url, download=False)
 
-        # Confirm file exists before sending
-        if not os.path.exists(downloaded_file):
-            return render_template('error.html', message="File was not downloaded.")
+        # Get the selected format’s direct media URL
+        direct_url = None
+        for f in info.get('formats', []):
+            if f.get('format_id') == format_id:
+                direct_url = f.get('url')
+                break
 
-        return send_file(downloaded_file, as_attachment=True)
+        if not direct_url:
+            return render_template('error.html', message="Download link not found.")
+
+        return redirect(direct_url)  # ✅ This makes browser download it
+
     except Exception as e:
         return render_template('error.html', message=f"Download failed: {str(e)}")
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
-
-        return render_template('error.html', message=f"Download failed: {str(e)}")
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)

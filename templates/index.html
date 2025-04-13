@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>YouTube Downloader</title>
+  <link rel = "stylesheet" href="../static/style.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <h1>YouTube Video Downloader 🔻</h1>
+    <form action="/fetch" method="POST" class="form">
+      <input type="text" name="url" placeholder="Paste YouTube video link here..." required>
+      <button type="submit">Fetch Video</button>
+    </form>
+    <p class="note">Private use only. For personal + educational purposes. ⚠️</p>
+  </div>
+</body>
+</html>
+
+
+

@@ -1237,8 +1237,6 @@
 
 
 
-
-
 from flask import Flask, render_template, request, redirect
 import yt_dlp
 import os
@@ -1286,16 +1284,17 @@ def fetch():
         filesize = f.get('filesize') or 0
         height = f.get('height')
         vcodec = f.get('vcodec')
+        acodec = f.get('acodec')
 
-               # Only include formats that have audio
+        # Only include formats that have audio and video
         if ext not in ['mp4', 'webm', 'm4a'] or not format_id:
             continue
-        if f.get('vcodec') != 'none' and f.get('acodec') == 'none':
-            continue  # skip video-only
-                if not f.get('acodec') or f.get('acodec') == 'none':
-            continue  # no audio
-        if not f.get('vcodec') or f.get('vcodec') == 'none':
-            continue  # no video
+        if vcodec == 'none' and acodec != 'none':
+            continue  # Skip video-only formats (with audio)
+        if acodec == 'none':
+            continue  # Skip formats with no audio
+        if vcodec == 'none':
+            continue  # Skip formats with no video
 
         if (format_id, ext) in seen:
             continue
@@ -1331,7 +1330,6 @@ def download():
     format_id = request.form['format_id']
 
     ydl_opts = {
-        # 'format': format_id,
         'format': f"{format_id}+bestaudio/best",
         'quiet': True,
         'skip_download': True,
@@ -1364,9 +1362,6 @@ def download():
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
-
-
-
 
 
 
